@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WordMaster - 高效英语单词学习平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#8B5CF6',
+                        dark: '#1E293B',
+                        light: '#F8FAFC'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .card-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+            }
+            .progress-ring-circle {
+                transition: stroke-dashoffset 0.35s;
+                transform: rotate(-90deg);
+                transform-origin: 50% 50%;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-dark">
+    <!-- 导航栏 -->
+    <nav id="main-nav" class="fixed w-full bg-white/90 backdrop-blur-sm shadow-sm z-50 transition-all duration-300">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <span class="text-primary text-2xl"><i class="fa fa-book"></i></span>
+                <span class="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">WordMaster</span>
+            </div>
+            
+            <!-- 桌面导航 -->
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#dashboard" class="font-medium text-gray-700 hover:text-primary transition-colors">首页</a>
+                <a href="#learn" class="font-medium text-gray-700 hover:text-primary transition-colors">学习</a>
+                <a href="#review" class="font-medium text-gray-700 hover:text-primary transition-colors">复习</a>
+                <a href="#test" class="font-medium text-gray-700 hover:text-primary transition-colors">测试</a>
+                <a href="#stats" class="font-medium text-gray-700 hover:text-primary transition-colors">统计</a>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <button class="hidden md:block px-4 py-2 bg-primary text-white rounded-full hover:bg-primary/90 transition-colors">
+                    <i class="fa fa-user-circle mr-1"></i> 我的账户
+                </button>
+                
+                <!-- 移动端菜单按钮 -->
+                <button id="menu-toggle" class="md:hidden text-gray-700 focus:outline-none">
+                    <i class="fa fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 移动端导航菜单 -->
+        <div id="mobile-menu" class="md:hidden hidden bg-white border-t animate-fadeIn">
+            <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+                <a href="#dashboard" class="py-2 font-medium text-gray-700 hover:text-primary transition-colors">首页</a>
+                <a href="#learn" class="py-2 font-medium text-gray-700 hover:text-primary transition-colors">学习</a>
+                <a href="#review" class="py-2 font-medium text-gray-700 hover:text-primary transition-colors">复习</a>
+                <a href="#test" class="py-2 font-medium text-gray-700 hover:text-primary transition-colors">测试</a>
+                <a href="#stats" class="py-2 font-medium text-gray-700 hover:text-primary transition-colors">统计</a>
+                <button class="w-full px-4 py-2 bg-primary text-white rounded-full hover:bg-primary/90 transition-colors">
+                    <i class="fa fa-user-circle mr-1"></i> 我的账户
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="pt-16">
+        <!-- 英雄区域 -->
+        <section id="dashboard" class="bg-gradient-to-br from-blue-50 to-purple-50 py-16 md:py-24">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-col md:flex-row items-center">
+                    <div class="md:w-1/2 mb-10 md:mb-0">
+                        <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight text-dark mb-4">
+                            轻松掌握<span class="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">英语单词</span>
+                        </h1>
+                        <p class="text-gray-600 text-lg mb-8 max-w-lg">
+                            科学记忆方法，个性化学习计划，让背单词不再枯燥，效率提升300%。
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <a href="#learn" class="px-6 py-3 bg-primary text-white rounded-full font-medium text-center hover:bg-primary/90 transform transition hover:scale-105 shadow-lg hover:shadow-primary/20">
+                                开始学习
+                            </a>
+                            <a href="#test" class="px-6 py-3 bg-white text-primary border border-primary rounded-full font-medium text-center hover:bg-gray-50 transform transition hover:scale-105">
+                                测试水平
+                            </a>
+                        </div>
+                        
+                        <div class="mt-10 flex items-center">
+                            <div class="flex -space-x-2">
+                                <img src="https://picsum.photos/id/64/100/100" alt="用户头像" class="w-10 h-10 rounded-full border-2 border-white">
+                                <img src="https://picsum.photos/id/65/100/100" alt="用户头像" class="w-10 h-10 rounded-full border-2 border-white">
+                                <img src="https://picsum.photos/id/66/100/100" alt="用户头像" class="w-10 h-10 rounded-full border-2 border-white">
+                                <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center border-2 border-white text-sm font-medium">
+                                    +2k
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <div class="flex items-center">
+                                    <div class="flex">
+                                        <i class="fa fa-star text-yellow-400"></i>
+                                        <i class="fa fa-star text-yellow-400"></i>
+                                        <i class="fa fa-star text-yellow-400"></i>
+                                        <i class="fa fa-star text-yellow-400"></i>
+                                        <i class="fa fa-star-half-o text-yellow-400"></i>
+                                    </div>
+                                    <span class="ml-1 text-gray-600">4.8/5</span>
+                                </div>
+                                <p class="text-sm text-gray-500">来自2000+用户的好评</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="md:w-1/2 relative">
+                        <div class="relative z-10 bg-white rounded-2xl shadow-xl overflow-hidden transform md:rotate-2 transition-transform hover:rotate-0 duration-500">
+                            <img src="https://picsum.photos/id/3/600/400" alt="单词学习界面" class="w-full h-64 md:h-80 object-cover">
+                            <div class="p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <span class="px-3 py-1 bg-blue-100 text-primary rounded-full text-sm font-medium">今日学习</span>
+                                    <span class="text-gray-500 text-sm">12/30 单词</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2 mb-6">
+                                    <div class="bg-primary h-2 rounded-full" style="width: 40%"></div>
+                                </div>
+                                <div class="flex justify-between text-sm text-gray-500">
+                                    <div>
+                                        <p>已掌握单词</p>
+                                        <p class="font-bold text-dark">1,248</p>
+                                    </div>
+                                    <div>
+                                        <p>学习天数</p>
+                                        <p class="font-bold text-dark">42</p>
+                                    </div>
+                                    <div>
+                                        <p>连续打卡</p>
+                                        <p class="font-bold text-dark">15天</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="absolute top-10 -right-5 w-24 h-24 bg-secondary/20 rounded-full -z-10"></div>
+                        <div class="absolute -bottom-5 -left-5 w-32 h-32 bg-accent/20 rounded-full -z-10"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 学习区域 -->
+        <section id="learn" class="py-16 bg-white">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-4">单词学习</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">按照科学记忆曲线，循序渐进地学习新单词，每个单词都配有例句和发音</p>
+                </div>
+                
+                <div class="max-w-3xl mx-auto">
+                    <!-- 单词卡片 -->
+                    <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 mb-8 card-hover">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <span class="px-3 py-1 bg-green-100 text-secondary rounded-full text-sm font-medium">新单词</span>
+                                <span class="ml-2 text-gray-500 text-sm">24/100</span>
+                            </div>
+                            <button class="text-gray-400 hover:text-primary transition-colors">
+                                <i class="fa fa-volume-up text-xl"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <h3 class="text-4xl font-bold mb-2">aberration</h3>
+                            <p class="text-gray-500 italic">/ˌæbəˈreɪʃn/</p>
+                            <p class="text-accent font-medium mt-1">n. 偏差，脱离常轨；精神失常</p>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <h4 class="text-lg font-semibold mb-2 text-gray-700">释义</h4>
+                            <p class="text-gray-600">A departure from what is normal, usual, or expected, typically one that is unwelcome.</p>
+                            <p class="text-gray-600 mt-2">偏离正常、常规或预期的情况，通常指不受欢迎的偏离。</p>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <h4 class="text-lg font-semibold mb-2 text-gray-700">例句</h4>
+                            <p class="text-gray-600 italic">"The decision was an aberration from the usual policy."</p>
+                            <p class="text-gray-600 mt-1">“这个决定偏离了通常的政策。”</p>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <h4 class="text-lg font-semibold mb-2 text-gray-700">同义词</h4>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">anomaly</span>
+                                <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">deviation</span>
+                                <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">irregularity</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <button class="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-full font-medium hover:bg-gray-200 transition-colors">
+                                太难了
+                            </button>
+                            <button class="px-5 py-2.5 bg-yellow-100 text-yellow-700 rounded-full font-medium hover:bg-yellow-200 transition-colors">
+                                有点印象
+                            </button>
+                            <button class="px-5 py-2.5 bg-secondary text-white rounded-full font-medium hover:bg-secondary/90 transition-colors">
+                                记住了
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 单词列表 -->
+                    <div class="bg-gray-50 rounded-2xl p-6">
+                        <h3 class="text-xl font-bold mb-4">单词列表</h3>
+                        <div class="space-y-3 max-h-60 overflow-y-auto pr-2">
+                            <div class="flex justify-between items-center p-3 bg-white rounded-lg shadow-sm">
+                                <div>
+                                    <p class="font-medium">aberration</p>
+                                    <p class="text-sm text-gray-500">n. 偏差，脱离常轨</p>
+                                </div>
+                                <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-white rounded-lg shadow-sm">
+                                <div>
+                                    <p class="font-medium">abjure</p>
+                                    <p class="text-sm text-gray-500">v. 发誓放弃，宣誓弃绝</p>
+                                </div>
+                                <span class="w-2 h-2 rounded-full bg-gray-300"></span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-white rounded-lg shadow-sm">
+                                <div>
+                                    <p class="font-medium">ablution</p>
+                                    <p class="text-sm text-gray-500">n. 沐浴，净身</p>
+                                </div>
+                                <span class="w-2 h-2 rounded-full bg-gray-300"></span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-white rounded-lg shadow-sm">
+                                <div>
+                                    <p class="font-medium">abnegation</p>
+                                    <p class="text-sm text-gray-500">n. 放弃，克制</p>
+                                </div>
+                                <span class="w-2 h-2 rounded-full bg-gray-300"></span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-white rounded-lg shadow-sm">
+                                <div>
+                                    <p class="font-medium">abominate</p>
+                                    <p class="text-sm text-gray-500">v. 痛恨，憎恶</p>
+                                </div>
+                                <span class="w-2 h-2 rounded-full bg-gray-300"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 复习区域 -->
+        <section id="review" class="py-16 bg-gray-50">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-4">单词复习</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">根据艾宾浩斯记忆曲线，智能安排复习计划，巩固记忆效果</p>
+                </div>
+                
+                <div class="max-w-3xl mx-auto">
+                    <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 mb-8 card-hover">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <span class="px-3 py-1 bg-purple-100 text-accent rounded-full text-sm font-medium">复习</span>
+                                <span class="ml-2 text-gray-500 text-sm">8/24 单词</span>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="text-gray-400 hover:text-primary transition-colors">
+                                    <i class="fa fa-volume-up text-xl"></i>
+                                </button>
+                                <button class="text-gray-400 hover:text-primary transition-colors">
+                                    <i class="fa fa-eye text-xl"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center py-10">
+                            <div class="text-5xl font-bold mb-4">
+                                ???
+                            </div>
+                            <p class="text-gray-500 mb-8">点击显示单词，然后选择你的熟悉程度</p>
+                            
+                            <button id="show-word" class="px-6 py-3 bg-primary text-white rounded-full font-medium mb-8 hover:bg-primary/90 transition-colors">
+                                显示单词
+                            </button>
+                            
+                            <div id="word-details" class="hidden">
+                                <h3 class="text-4xl font-bold mb-2">ephemeral</h3>
+                                <p class="text-gray-500 italic mb-4">/ɪˈfemərəl/</p>
+                                <p class="text-accent font-medium mb-6">adj. 短暂的，转瞬即逝的</p>
+                                
+                                <div class="flex flex-wrap justify-center gap-3 mt-6">
+                                    <button class="px-4 py-2 bg-red-100 text-red-700 rounded-full font-medium hover:bg-red-200 transition-colors">
+                                        完全忘记
+                                    </button>
+                                    <button class="px-4 py-2 bg-orange-100 text-orange-700 rounded-full font-medium hover:bg-orange-200 transition-colors">
+                                        有点印象
+                                    </button>
+                                    <button class="px-4 py-2 bg-yellow-100 text-yellow-700 rounded-full font-medium hover:bg-yellow-200 transition-colors">
+                                        记得一些
+                                    </button>
+                                    <button class="px-4 py-2 bg-green-100 text-green-700 rounded-full font-medium hover:bg-green-200 transition-colors">
+                                        完全记住
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 复习计划 -->
+                    <div class="bg-white rounded-2xl shadow-md p-6">
+                        <h3 class="text-xl font-bold mb-4">今日复习计划</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-primary mr-3">
+                                        <i class="fa fa-clock-o"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium">早上复习</p>
+                                        <p class="text-sm text-gray-500">8个单词</p>
+                                    </div>
+                                </div>
+                                <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">已完成</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-primary mr-3">
+                                        <i class="fa fa-clock-o"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium">下午复习</p>
+                                        <p class="text-sm text-gray-500">8个单词</p>
+                                    </div>
+                                </div>
+                                <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm">进行中</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-primary mr-3">
+                                        <i class="fa fa-clock-o"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium">晚上复习</p>
+                                        <p class="text-sm text-gray-500">8个单词</p>
+                                    </div>
+                                </div>
+                                <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">未开始</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 测试区域 -->
+        <section id="test" class="py-16 bg-white">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-4">单词测试</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">通过多种测试方式检验学习成果，查漏补缺</p>
+                </div>
+                
+                <div class="max-w-3xl mx-auto">
+                    <!-- 测试类型选择 -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+                        <div class="bg-white border border-primary rounded-xl p-6 text-center card-hover cursor-pointer border-2">
+                            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-primary mx-auto mb-4">
+                                <i class="fa fa-check-circle text-2xl"></i>
+                            </div>
+                            <h3 class="font-bold mb-2">选择题测试</h3>
+                            <p class="text-sm text-gray-500">从选项中选择正确释义</p>
+                        </div>
+                        
+                        <div class="bg-white border border-gray-200 rounded-xl p-6 text-center card-hover cursor-pointer">
+                            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 mx-auto mb-4">
+                                <i class="fa fa-keyboard-o text-2xl"></i>
+                            </div>
+                            <h3 class="font-bold mb-2">拼写测试</h3>
+                            <p class="text-sm text-gray-500">根据释义拼写单词</p>
+                        </div>
+                        
+                        <div class="bg-white border border-gray-200 rounded-xl p-6 text-center card-hover cursor-pointer">
+                            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 mx-auto mb-4">
+                                <i class="fa fa-comments text-2xl"></i>
+                            </div>
+                            <h3 class="font-bold mb-2">听力测试</h3>
+                            <p class="text-sm text-gray-500">根据发音选择单词</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 测试题 -->
+                    <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 card-hover">
+                        <div class="flex justify-between items-center mb-6">
+                            <span class="px-3 py-1 bg-blue-100 text-primary rounded-full text-sm font-medium">选择题测试</span>
+                            <span class="text-gray-500 text-sm">3/10 题</span>
+                        </div>
+                        
+                        <div class="mb-8">
+                            <h3 class="text-xl font-bold mb-4">以下哪个是 "ephemeral" 的正确释义？</h3>
+                            <div class="space-y-3">
+                                <div class="border border-gray-200 rounded-lg p-4 hover:border-primary hover:bg-blue-50 transition-colors cursor-pointer">
+                                    <label class="flex items-center cursor-pointer">
+                                        <input type="radio" name="question" class="form-radio text-primary h-5 w-5">
+                                        <span class="ml-3">持久的，永恒的</span>
+                                    </label>
+                                </div>
+                                <div class="border border-gray-200 rounded-lg p-4 hover:border-primary hover:bg-blue-50 transition-colors cursor-pointer">
+                                    <label class="flex items-center cursor-pointer">
+                                        <input type="radio" name="question" class="form-radio text-primary h-5 w-5">
+                                        <span class="ml-3">短暂的，转瞬即逝的</span>
+                                    </label>
+                                </div>
+                                <div class="border border-gray-200 rounded-lg p-4 hover:border-primary hover:bg-blue-50 transition-colors cursor-pointer">
+                                    <label class="flex items-center cursor-pointer">
+                                        <input type="radio" name="question" class="form-radio text-primary h-5 w-5">
+                                        <span class="ml-3">强大的，有力的</span>
+                                    </label>
+                                </div>
+                                <div class="border border-gray-200 rounded-lg p-4 hover:border-primary hover:bg-blue-50 transition-colors cursor-pointer">
+                                    <label class="flex items-center cursor-pointer">
+                                        <input type="radio" name="question" class="form-radio text-primary h-5 w-5">
+                                        <span class="ml-3">困难的，复杂的</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <button class="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-full font-medium hover:bg-gray-200 transition-colors">
+                                上一题
+                            </button>
+                            <button class="px-5 py-2.5 bg-primary text-white rounded-full font-medium hover:bg-primary/90 transition-colors">
+                                下一题
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 统计区域 -->
+        <section id="stats" class="py-16 bg-gray-50">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-4">学习统计</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">跟踪你的学习进度，查看学习成果，激励自己持续进步</p>
+                </div>
+                
+                <div class="max-w-5xl mx-auto">
+                    <!-- 数据卡片 -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                        <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <p class="text-gray-500 text-sm">总掌握单词</p>
+                                    <h3 class="text-3xl font-bold mt-1">1,248</h3>
+                                </div>
+                                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-primary">
+                                    <i class="fa fa-book"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center text-green-500 text-sm">
+                                <i class="fa fa-arrow-up mr-1"></i>
+                                <span>12% 较上月</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <p class="text-gray-500 text-sm">学习天数</p>
+                                    <h3 class="text-3xl font-bold mt-1">42</h3>
+                                </div>
+                                <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-secondary">
+                                    <i class="fa fa-calendar"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center text-green-500 text-sm">
+                                <i class="fa fa-arrow-up mr-1"></i>
+                                <span>8天 较上月</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <p class="text-gray-500 text-sm">连续打卡</p>
+                                    <h3 class="text-3xl font-bold mt-1">15天</h3>
+                                </div>
+                                <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-500">
+                                    <i class="fa fa-fire"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center text-green-500 text-sm">
+                                <i class="fa fa-arrow-up mr-1"></i>
+                                <span>5天 新记录</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <p class="text-gray-500 text-sm">测试平均分</p>
+                                    <h3 class="text-3xl font-bold mt-1">87分</h3>
+                                </div>
+                                <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-accent">
+                                    <i class="fa fa-line-chart"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center text-green-500 text-sm">
+                                <i class="fa fa-arrow-up mr-1"></i>
+                                <span>5分 较上周</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 图表 -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                            <h3 class="text-lg font-bold mb-4">每日学习单词数</h3>
+                            <div class="h-64">
+                                <canvas id="dailyChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                            <h3 class="text-lg font-bold mb-4">单词掌握情况</h3>
+                            <div class="h-64">
+                                <canvas id="masteryChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 单词本区域 -->
+        <section class="py-16 bg-white">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-4">单词本</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">选择适合你的单词本，开始系统学习</p>
+                </div>
+                
+                <div class="max-w-5xl mx-auto">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- 单词本卡片 1 -->
+                        <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover border border-gray-100">
+                            <div class="h-40 overflow-hidden">
+                                <img src="https://picsum.photos/id/20/600/400" alt="高考英语单词" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+                            </div>
+                            <div class="p-6">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="px-2 py-1 bg-blue-100 text-primary text-xs rounded">热门</span>
+                                    <span class="text-gray-500 text-sm">3,245 单词</span>
+                                </div>
+                                <h3 class="font-bold text-lg mb-2">高考英语核心词汇</h3>
+                                <p class="text-gray-500 text-sm mb-4">精选高考必备英语词汇，按考频排序，助你高效备考</p>
+                                <button class="w-full py-2.5 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                                    开始学习
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- 单词本卡片 2 -->
+                        <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover border border-gray-100">
+                            <div class="h-40 overflow-hidden">
+                                <img src="https://picsum.photos/id/21/600/400" alt="四级英语单词" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+                            </div>
+                            <div class="p-6">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="px-2 py-1 bg-green-100 text-secondary text-xs rounded">推荐</span>
+                                    <span class="text-gray-500 text-sm">4,532 单词</span>
+                                </div>
+                                <h3 class="font-bold text-lg mb-2">大学英语四级词汇</h3>
+                                <p class="text-gray-500 text-sm mb-4">根据最新四级考试大纲编写，包含全部必备词汇</p>
+                                <button class="w-full py-2.5 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                                    开始学习
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- 单词本卡片 3 -->
+                        <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover border border-gray-100">
+                            <div class="h-40 overflow-hidden">
+                                <img src="https://picsum.photos/id/22/600/400" alt="托福单词" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+                            </div>
+                            <div class="p-6">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="px-2 py-1 bg-purple-100 text-accent text-xs rounded">进阶</span>
+                                    <span class="text-gray-500 text-sm">5,876 单词</span>
+                                </div>
+                                <h3 class="font-bold text-lg mb-2">托福核心词汇</h3>
+                                <p class="text-gray-500 text-sm mb-4">托福考试高频词汇，按学科分类，附例句和同义词</p>
+                                <button class="w-full py-2.5 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                                    开始学习
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-10">
+                        <button class="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-full font-medium hover:bg-gray-50 transition-colors">
+                            查看更多单词本 <i class="fa fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 鼓励区域 -->
+        <section class="py-16 bg-gradient-to-r from-primary to-accent text-white">
+            <div class="container mx-auto px-4 text-center">
+                <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-6">坚持就是胜利</h2>
+                <p class="text-white/80 max-w-2xl mx-auto mb-8 text-lg">每天学习15分钟，30天后你将掌握450+单词，一年后你的词汇量将突破5000+</p>
+                <a href="#learn" class="inline-block px-8 py-3 bg-white text-primary rounded-full font-medium hover:bg-gray-100 transition-colors shadow-lg">
+                    立即开始学习
+                </a>
+            </div>
+        </section>
+    </main>
+    
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white pt-16 pb-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+                <div>
+                    <div class="flex items-center space-x-2 mb-6">
+                        <span class="text-primary text-2xl"><i class="fa fa-book"></i></span>
+                        <span class="text-xl font-bold">WordMaster</span>
+                    </div>
+                    <p class="text-gray-400 mb-6">高效英语单词学习平台，让背单词变得简单而有趣</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary transition-colors">
+                            <i class="fa fa-weibo"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary transition-colors">
+                            <i class="fa fa-wechat"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary transition-colors">
+                            <i class="fa fa-twitter"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-bold mb-6">功能导航</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#learn" class="text-gray-400 hover:text-white transition-colors">单词学习</a></li>
+                        <li><a href="#review" class="text-gray-400 hover:text-white transition-colors">单词复习</a></li>
+                        <li><a href="#test" class="text-gray-400 hover:text-white transition-colors">单词测试</a></li>
+                        <li><a href="#stats" class="text-gray-400 hover:text-white transition-colors">学习统计</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">单词本</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-bold mb-6">帮助中心</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">使用指南</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">常见问题</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">联系我们</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">意见反馈</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-bold mb-6">订阅更新</h3>
+                    <p class="text-gray-400 mb-4">获取最新学习技巧和单词表更新</p>
+                    <form class="mb-4">
+                        <div class="flex">
+                            <input type="email" value="1003720830@qq.com" class="px-4 py-2 bg-gray-800 text-white rounded-l-lg w-full focus:outline-none focus:ring-1 focus:ring-primary">
+                            <button type="submit" class="bg-primary px-4 py-2 rounded-r-lg hover:bg-primary/90 transition-colors">
+                                <i class="fa fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </form>
+                    <p class="text-gray-500 text-sm">我们尊重你的隐私，不会发送垃圾邮件</p>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <p class="text-gray-500 text-sm mb-4 md:mb-0">© 2023 WordMaster. 保留所有权利</p>
+                    <div class="flex space-x-6">
+                        <a href="#" class="text-gray-500 hover:text-gray-300 text-sm">隐私政策</a>
+                        <a href="#" class="text-gray-500 hover:text-gray-300 text-sm">服务条款</a>
+                        <a href="#" class="text-gray-500 hover:text-gray-300 text-sm">关于我们</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- 返回顶部按钮 -->
+    <button id="back-to-top" class="fixed bottom-6 right-6 w-12 h-12 bg-primary text-white rounded-full shadow-lg flex items-center justify-center opacity-0 invisible transition-all duration-300 hover:bg-primary/90">
+        <i class="fa fa-arrow-up"></i>
+    </button>
+    
+    <!-- JavaScript -->
+    <script>
+        // 移动端菜单切换
+        const menuToggle = document.getElementById('menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // 显示单词功能
+        const showWordBtn = document.getElementById('show-word');
+        const wordDetails = document.getElementById('word-details');
+        
+        showWordBtn.addEventListener('click', () => {
+            showWordBtn.classList.add('hidden');
+            wordDetails.classList.remove('hidden');
+            
+            // 添加动画效果
+            wordDetails.classList.add('animate-fadeIn');
+        });
+        
+        // 导航栏滚动效果
+        const nav = document.getElementById('main-nav');
+        let lastScrollTop = 0;
+        
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            if (scrollTop > 100) {
+                nav.classList.add('py-2', 'shadow');
+                nav.classList.remove('py-3');
+            } else {
+                nav.classList.add('py-3');
+                nav.classList.remove('py-2', 'shadow');
+            }
+            
+            lastScrollTop = scrollTop;
+        });
+        
+        // 返回顶部按钮
+        const backToTopBtn = document.getElementById('back-to-top');
+        
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                backToTopBtn.classList.remove('opacity-0', 'invisible');
+                backToTopBtn.classList.add('opacity-100', 'visible');
+            } else {
+                backToTopBtn.classList.add('opacity-0', 'invisible');
+                backToTopBtn.classList.remove('opacity-100', 'visible');
+            }
+        });
+        
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    
+                    // 关闭移动菜单
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                }
+            });
+        });
+        
+        // 图表初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            // 每日学习单词数图表
+            const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+            new Chart(dailyCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+                    datasets: [{
+                        label: '学习单词数',
+                        data: [25, 32, 18, 40, 28, 35, 22],
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // 单词掌握情况图表
+            const masteryCtx = document.getElementById('masteryChart').getContext('2d');
+            new Chart(masteryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['已掌握', '复习中', '新单词'],
+                    datasets: [{
+                        data: [65, 20, 15],
+                        backgroundColor: [
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(139, 92, 246, 0.7)'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+    
